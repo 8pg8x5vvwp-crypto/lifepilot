@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/static/styles.css?v=1003">
+  <title>LifePilot</title>
+</head>
+
+<body>
+  <div class="container">
+
+    <aside class="sidebar">
+      <div class="logo">
+        <img src="/static/lifepilot-logo.png" alt="LifePilot Logo">
+      </div>
+      <nav>
+        <button class="nav-btn active" onclick="showSection('dashboard', this)">🏠 Dashboard</button>
+        <button class="nav-btn" onclick="showSection('tasks', this)">☑️ Tasks</button>
+        <button class="nav-btn" onclick="showSection('reminders', this)">🔔 Reminders</button>
+        <button class="nav-btn" onclick="showSection('schedule', this)">📅 Schedule</button>
+        <button class="nav-btn" onclick="showSection('spending', this)">💰 Spending</button>
+        <button class="nav-btn" onclick="showSection('notes', this)">📝 Notes</button>
+        <button class="nav-btn" onclick="showSection('chat', this)">🤖 AI Assistant</button>
+      </nav>
+      <div class="sidebar-user">
+        <div class="user-avatar" id="sidebarAvatar">{{ username[0]|upper if username else "?" }}</div>
+        <div class="user-info">
+          <div class="user-name" id="sidebarUsername">{{ username }}</div>
+          <div class="user-role" id="logoutBtn" style="cursor:pointer">Log Out</div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+
+      <!-- DASHBOARD -->
+      <section id="dashboard" class="section active">
+        <div class="dash-header">
+          <div>
+            <h1>Dashboard</h1>
+            <p class="dash-sub">Here's what's happening today.</p>
+          </div>
+          <div class="dash-header-right">
+            <div class="greeting">Good Evening, {{ username }} 👋</div>
+            <div class="dash-date" id="currentDate"></div>
+          </div>
+        </div>
+
+        <!-- Top Stat Cards -->
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-icon icon-red">☑️</div>
+            <div class="stat-label">Total Tasks</div>
+            <div class="stat-value" id="totalTasksCard">0</div>
+            <div class="stat-sub">All your tasks</div>
+            <svg class="sparkline" viewBox="0 0 60 28"><polyline points="0,20 10,18 20,22 30,14 40,16 50,10 60,12" fill="none" stroke="#e05252" stroke-width="1.5"/></svg>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon icon-green">✅</div>
+            <div class="stat-label">Completed Tasks</div>
+            <div class="stat-value" id="completedTasksCard">0</div>
+            <div class="stat-sub">Great job!</div>
+            <svg class="sparkline" viewBox="0 0 60 28"><polyline points="0,24 10,22 20,18 30,14 40,10 50,7 60,5" fill="none" stroke="#34c759" stroke-width="1.5"/></svg>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon icon-amber">🔔</div>
+            <div class="stat-label">Pending Reminders</div>
+            <div class="stat-value" id="remindersCard">0</div>
+            <div class="stat-sub">You're all caught up!</div>
+            <svg class="sparkline" viewBox="0 0 60 28"><polyline points="0,14 10,14 20,14 30,14 40,14 50,14 60,14" fill="none" stroke="#ffaa00" stroke-width="1.5"/></svg>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon icon-blue">💼</div>
+            <div class="stat-label">Total Spending</div>
+            <div class="stat-value stat-value-sm" id="dashboardSpending">$0.00</div>
+            <div class="stat-sub">Stay on budget</div>
+            <svg class="sparkline" viewBox="0 0 60 28"><polyline points="0,20 10,16 20,18 30,13 40,15 50,11 60,13" fill="none" stroke="#3878dc" stroke-width="1.5"/></svg>
+          </div>
+        </div>
+
+        <!-- Middle Row -->
+        <div class="dash-middle">
+          <div class="dash-card">
+            <div class="dash-card-title">Today's Overview</div>
+            <div class="donut-wrap">
+              <div class="donut-container">
+                <svg viewBox="0 0 100 100" width="100" height="100">
+                  <circle cx="50" cy="50" r="40" fill="none" stroke="#2a2a3a" stroke-width="10"/>
+                  <circle cx="50" cy="50" r="40" fill="none" stroke="#34c759" stroke-width="10"
+                    stroke-dasharray="251.2" stroke-dashoffset="45.2"
+                    stroke-linecap="round" transform="rotate(-90 50 50)" id="productivityArc"/>
+                </svg>
+                <div class="donut-center">
+                  <div class="donut-pct" id="productivityPct">82%</div>
+                  <div class="donut-lbl">Productivity<br>Score</div>
+                </div>
+              </div>
+              <div class="overview-list">
+                <div class="ov-row"><span class="ov-icon green">✅</span> <strong id="todayCompleted">0</strong> <span class="ov-label">Tasks Completed</span></div>
+                <div class="ov-row"><span class="ov-icon amber">⏳</span> <strong id="todayPending">0</strong> <span class="ov-label">Task Pending</span></div>
+                <div class="ov-row"><span class="ov-icon red">💸</span> <strong id="todaySpending" class="red-text">$0</strong> <span class="ov-label">Spent Today</span></div>
+                <div class="ov-row"><span class="ov-icon blue">📅</span> <strong id="tomorrowEvents">0</strong> <span class="ov-label">Events Tomorrow</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="dash-card">
+            <div class="dash-card-title">Upcoming Tasks <a class="view-all" onclick="showSection('tasks', document.querySelectorAll('.nav-btn')[1])">View All</a></div>
+            <div class="upcoming-list" id="upcomingTasks">
+              <p style="color:#808098;font-size:12px">Loading...</p>
+            </div>
+          </div>
+
+          <div class="dash-card calendar-card">
+            <div class="cal-header-row">
+              <div class="dash-card-title" style="margin-bottom:0">Calendar</div>
+              <div class="cal-month-nav">
+                <span id="calMonthLabel">June 2026</span>
+                <button class="cal-nav-btn" onclick="changeMonth(-1)">&#8249;</button>
+                <button class="cal-nav-btn" onclick="changeMonth(1)">&#8250;</button>
+              </div>
+            </div>
+            <div class="cal-grid" id="calGrid"></div>
+            <div class="cal-legend">
+              <span><span class="legend-dot red-dot"></span> Deadlines</span>
+              <span><span class="legend-dot blue-dot"></span> Events</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Row: Notes Preview + Spending + AI Insight -->
+        <div class="dash-bottom">
+
+          <div class="dash-card notes-dash-card">
+            <div class="dash-card-title">📝 Recent Notes <a class="view-all" onclick="showSection('notes', document.querySelectorAll('.nav-btn')[5])">View All</a></div>
+            <div id="dashNotesList" class="dash-notes-list">
+              <p style="color:#808098;font-size:12px">No notes yet.</p>
+            </div>
+            <button class="notes-dash-add-btn" onclick="showSection('notes', document.querySelectorAll('.nav-btn')[5]); setTimeout(()=>openNoteEditor(), 200)">+ New Note</button>
+          </div>
+
+          <div class="dash-card spending-overview-card">
+            <div class="spend-card-top">
+              <div class="dash-card-title" style="margin-bottom:0">Spending Overview</div>
+              <select class="spend-range-select" id="spendRangeSelect" onchange="updateSpendingChart()">
+                <option value="week">This Week</option>
+                <option value="month">This Month</option>
+              </select>
+            </div>
+            <div class="spend-week-label">This Week</div>
+            <div class="spend-row">
+              <div class="spend-amount" id="weekSpending">$0.00</div>
+              <div class="spend-change">Track your expenses</div>
+            </div>
+
+            <div class="spend-chart-wrap">
+              <svg id="spendLineChart" class="spend-line-svg" viewBox="0 0 700 220" preserveAspectRatio="none"></svg>
+            </div>
+
+            <div class="spend-stats-row">
+              <div class="spend-stat-mini">
+                <div class="spend-stat-icon green-bg">↗</div>
+                <div>
+                  <div class="spend-stat-label">Highest Day</div>
+                  <div class="spend-stat-sub" id="highestDayName">—</div>
+                  <div class="spend-stat-val" id="highestDayVal">$0.00</div>
+                </div>
+              </div>
+              <div class="spend-stat-mini">
+                <div class="spend-stat-icon red-bg">↓</div>
+                <div>
+                  <div class="spend-stat-label">Lowest Day</div>
+                  <div class="spend-stat-sub" id="lowestDayName">—</div>
+                  <div class="spend-stat-val" id="lowestDayVal">$0.00</div>
+                </div>
+              </div>
+              <div class="spend-stat-mini">
+                <div class="spend-stat-icon amber-bg">⊙</div>
+                <div>
+                  <div class="spend-stat-label">Average Daily</div>
+                  <div class="spend-stat-val" id="avgDailyVal">$0.00</div>
+                </div>
+              </div>
+              <div class="spend-stat-mini">
+                <div class="spend-stat-icon blue-bg">⇄</div>
+                <div>
+                  <div class="spend-stat-label">Total Transactions</div>
+                  <div class="spend-stat-val" id="totalTxnVal">0</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="dash-card ai-card">
+            <div class="ai-card-top">
+              <div class="ai-icon">✨</div>
+              <div class="ai-title">AI Insight</div>
+            </div>
+            <div class="ai-text">You have 3 tasks due this week. Completing Math Assignment today will reduce your workload by 25%.</div>
+            <button class="ai-btn" onclick="showSection('chat', document.querySelectorAll('.nav-btn')[6])">Ask AI</button>
+          </div>
+
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions-wrap">
+          <div class="quick-actions">
+            <button class="qa-btn" onclick="showSection('tasks', document.querySelectorAll('.nav-btn')[1])">
+              <span class="qa-icon red-icon">➕</span> Add Task
+            </button>
+            <button class="qa-btn" onclick="showSection('reminders', document.querySelectorAll('.nav-btn')[2])">
+              <span class="qa-icon amber-icon">🔔</span> Add Reminder
+            </button>
+            <button class="qa-btn" onclick="showSection('schedule', document.querySelectorAll('.nav-btn')[3])">
+              <span class="qa-icon blue-icon">📅</span> Plan Schedule
+            </button>
+            <button class="qa-btn" onclick="showSection('spending', document.querySelectorAll('.nav-btn')[4])">
+              <span class="qa-icon green-icon">💵</span> Add Expense
+            </button>
+            <button class="qa-btn" onclick="showSection('notes', document.querySelectorAll('.nav-btn')[5]); setTimeout(()=>openNoteEditor(), 200)">
+              <span class="qa-icon yellow-icon">📝</span> New Note
+            </button>
+            <button class="qa-btn" onclick="showSection('chat', document.querySelectorAll('.nav-btn')[6])">
+              <span class="qa-icon purple-icon">🤖</span> Ask AI
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- TASKS -->
+      <section id="tasks" class="section">
+        <h1>Your Tasks</h1>
+        <div class="task-input-box">
+          <input type="text" id="taskInput" placeholder="Enter a new task..." />
+          <button type="button" class="mic-btn" onclick="startVoiceInput('taskInput', event)">🎤</button>
+          <button id="taskAddBtn" onclick="addTask()">Add Task</button>
+        </div>
+        <div id="taskList" class="task-list"></div>
+      </section>
+
+      <!-- REMINDERS -->
+      <section id="reminders" class="section">
+        <h1>Reminders</h1>
+        <div class="reminder-input-box">
+          <input type="text" id="reminderInput" placeholder="Enter a new reminder..." />
+          <button type="button" class="mic-btn" onclick="startVoiceInput('reminderInput', event)">🎤</button>
+          <button id="reminderAddBtn" onclick="addReminder()">Add Reminder</button>
+        </div>
+        <div id="reminderList" class="reminder-list"></div>
+      </section>
+
+      <!-- SCHEDULE -->
+      <section id="schedule" class="section">
+        <h1>Schedule</h1>
+        <div class="schedule-input-box">
+          <input type="text" id="scheduleTitleInput" placeholder="Enter schedule title..." />
+          <button type="button" class="mic-btn" onclick="startVoiceInput('scheduleTitleInput', event)">🎤</button>
+          <input type="date" id="scheduleDateInput" />
+          <input type="time" id="scheduleTimeInput" />
+          <button id="scheduleAddBtn" onclick="addScheduleItem()">Add Event</button>
+        </div>
+        <div id="scheduleList" class="schedule-list"></div>
+      </section>
+
+      <!-- SPENDING -->
+      <section id="spending" class="section">
+        <h1>Spending</h1>
+        <div class="spending-summary-card">
+          <h2>Total Spending</h2>
+          <p id="totalSpending">$0.00</p>
+        </div>
+        <div class="spending-input-box">
+          <input type="text" id="expenseTitleInput" placeholder="Example: Coffee 5" />
+          <button type="button" class="mic-btn" onclick="startVoiceInput('expenseTitleInput', event)">🎤</button>
+          <button id="spendingAddBtn" onclick="addExpense()">Add Expense</button>
+        </div>
+        <div id="spendingList" class="spending-list"></div>
+      </section>
+
+      <!-- NOTES -->
+      <section id="notes" class="section">
+        <div class="notes-header">
+          <h1>Notes</h1>
+          <button class="notes-new-btn" onclick="openNoteEditor()">+ New Note</button>
+        </div>
+        <input type="text" id="notesSearch" class="notes-search" placeholder="🔍 Search notes..." oninput="filterNotes(this.value)" />
+        <div id="notesList" class="notes-grid"></div>
+
+        <!-- Note Editor Modal -->
+        <div id="noteModal" class="note-modal hidden">
+          <div class="note-modal-backdrop" onclick="closeNoteEditor()"></div>
+          <div class="note-modal-card">
+            <div class="note-modal-top">
+              <input type="text" id="noteTitle" class="note-title-input" placeholder="Note title..." />
+              <div class="note-modal-actions">
+                <button class="note-pin-btn" id="notePinBtn" onclick="toggleEditorPin()" title="Pin note">📌</button>
+                <button class="note-close-btn" onclick="closeNoteEditor()">✕</button>
+              </div>
+            </div>
+            <textarea id="noteContent" class="note-content-input" placeholder="Start writing..."></textarea>
+            <div class="note-modal-footer">
+              <span id="noteTimestamp" class="note-timestamp"></span>
+              <div class="note-modal-btns">
+                <button class="note-delete-modal-btn hidden" id="noteDeleteBtn" onclick="deleteCurrentNote()">Delete</button>
+                <button class="note-save-btn" onclick="saveNote()">Save</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- AI ASSISTANT -->
+      <section id="chat" class="section">
+        <h1>AI Assistant</h1>
+        <div class="chat-box" id="messages">
+          <p><strong>LifePilot:</strong> Hi! I'm your AI assistant. I can help you manage tasks, reminders, schedules, notes, and spending.</p>
+        </div>
+        <div class="chat-input">
+          <input type="text" id="user-input" placeholder="Type your message..." />
+          <button type="button" class="mic-btn" onclick="startVoiceInput('user-input', event)">🎤</button>
+          <button onclick="sendMessage()">Send</button>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="/static/script.js"></script>
+  <script>
+    const dateEl = document.getElementById('currentDate');
+    if (dateEl) dateEl.textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+    function showSection(id, btn) {
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      const sec = document.getElementById(id);
+      if (sec) sec.classList.add('active');
+      if (btn) btn.classList.add('active');
+    }
+
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', async () => {
+        try { await fetch('/api/auth/logout', { method: 'POST' }); } catch (e) {}
+        window.location.href = '/login';
+      });
+    }
+
+    let calYear = 2026, calMonth = 5;
+    function renderCalendar() {
+      const grid = document.getElementById('calGrid');
+      const label = document.getElementById('calMonthLabel');
+      if (!grid) return;
+      const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+      label.textContent = months[calMonth] + ' ' + calYear;
+      const days = ['Mo','Tu','We','Th','Fr','Sa','Su'];
+      let html = days.map(d => `<div class="cal-day-label">${d}</div>`).join('');
+      const first = new Date(calYear, calMonth, 1);
+      let startDay = first.getDay();
+      startDay = startDay === 0 ? 6 : startDay - 1;
+      const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+      const daysInPrev = new Date(calYear, calMonth, 0).getDate();
+      const today = new Date();
+      for (let i = startDay - 1; i >= 0; i--) html += `<div class="cal-day other-month">${daysInPrev - i}</div>`;
+      for (let d = 1; d <= daysInMonth; d++) {
+        let cls = 'cal-day';
+        if (d === today.getDate() && calMonth === today.getMonth() && calYear === today.getFullYear()) cls += ' today';
+        if ([6, 20].includes(d) && calMonth === 5) cls += ' has-deadline';
+        if ([5, 24].includes(d) && calMonth === 5) cls += ' has-event';
+        html += `<div class="${cls}">${d}</div>`;
+      }
+      const total = startDay + daysInMonth;
+      const remaining = total % 7 === 0 ? 0 : 7 - (total % 7);
+      for (let d = 1; d <= remaining; d++) html += `<div class="cal-day other-month">${d}</div>`;
+      grid.innerHTML = html;
+    }
+    function changeMonth(dir) {
+      calMonth += dir;
+      if (calMonth > 11) { calMonth = 0; calYear++; }
+      if (calMonth < 0) { calMonth = 11; calYear--; }
+      renderCalendar();
+    }
+    renderCalendar();
+  </script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+SpeechRecognition for speech recognition
+PyAudio for microphone access
+google-genai for nlp
+FastAPI,uvicorn for web server
+jinja2 for templates
+pydantic for data validation
+sqlite3 for data
+dateparser for scheduling

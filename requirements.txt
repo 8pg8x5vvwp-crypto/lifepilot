@@ -1,0 +1,12 @@
+fastapi==0.116.1
+uvicorn==0.35.0
+jinja2==3.1.6
+pydantic==2.11.7
+groq==0.13.0
+python-dotenv==1.0.1
+dateparser
+SpeechRecognition
+requests
+httpx
+itsdangerous
+psycopg2-binary
