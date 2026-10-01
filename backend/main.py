@@ -199,7 +199,7 @@ class LifePilotApp:
             messages.append({"role": msg["role"], "content": msg["content"]})
         try:
             response = groq_client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
+                model="openai/gpt-oss-120b",
                 messages=messages,
                 max_tokens=1024,
             )
